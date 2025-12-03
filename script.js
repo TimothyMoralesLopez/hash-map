@@ -323,6 +323,125 @@ class HashMap {
   }
 }
 
+class HashSet {
+  constructor() {
+    this.loadFactor = 0.75;
+    this.defaultCapacity = 16; 
+    this.capacity = this.defaultCapacity; 
+    this.threshold = this.loadFactor * this.capacity; 
+    this.buckets = new Array(this.capacity); 
+    this.fullBuckets = 0;
+  }
+
+  hash(key) {
+    let hashCode = 0;
+    const primeNumber = 31;
+
+    for (let i = 0; i < key.length; i++) {
+      hashCode = ((primeNumber * hashCode) + key.charCodeAt(i)) % this.capacity;
+    }
+
+    return hashCode;
+  } 
+
+  set(key) { 
+    let index = this.hash(key);
+
+    if (!this.buckets[index]) {
+      this.buckets[index] = new LinkedList(); 
+      this.buckets[index].append(`${key}}`); 
+      this.fullBuckets++; 
+      this.growMap();
+    }
+    else {
+      for (let i = 0; i < this.buckets[index].getSize(); i++) {
+        if (this.buckets[index].at(i).value === `${key}`) {
+            return;
+        }
+      }
+        this.buckets[index].append(`${key}}`);
+        this.growMap(); 
+    }
+  }
+
+  growMap() {
+    if (this.getLength() > this.threshold) {
+
+      let temp = this.getKeys();
+      this.capacity *= 2;  
+      this.threshold = this.loadFactor * this.capacity; 
+      this.buckets = new Array(this.capacity); 
+
+      for (let i = 0; i < temp.length; i++) {
+        this.set(temp[i]); 
+      }
+    }
+  }
+
+  get(key) {
+    let index = this.hash(key);
+
+    for (let i = 0; this.buckets[index].getSize(); i++) {
+        if (this.buckets[index].at(i).value === `${key}`) {
+            return this.buckets[index].at(i).value; 
+        }
+    }
+    return null; 
+  }
+
+  has(key) {    
+    let index = this.hash(key);
+
+    for (let i = 0; this.buckets[index].getSize(); i++) {
+        if (this.buckets[index].at(i).value === `${key}`) {
+            return true;
+        }
+    }
+    return false; 
+}
+
+  remove(key) {
+    let index = this.hash(key); 
+    for (let i = 0; this.buckets[index].getSize(); i++) {
+      if (this.buckets[index].at(i).value === `${key}`) {
+        this.buckets[index].removeAt(i);
+        return true;
+      }
+    }
+    return false; 
+  }
+
+  getLength() {
+    let len = 0;
+    for (let i = 0; i < this.capacity; i++) {
+        if (this.buckets[i]) {
+            len += this.buckets[i].getSize(); 
+        }
+    }
+    return len;
+  }
+
+  clear() {
+    this.fullBuckets = 0;
+    this.capacity = this.defaultCapacity; 
+    this.threshold = this.loadFactor * this.capacity;
+    this.buckets = new Array(this.capacity); 
+  }
+
+  getKeys() {
+    let keysArr = [];
+
+    for (let i = 0; i < this.capacity; i++) {
+        if (this.buckets[i]) {
+            for (let j = 0; j < this.buckets[i].getSize(); j++) {
+                keysArr.push(this.buckets[i].at(j).value);
+            }
+        }
+    }
+    return keysArr; 
+  }
+}
+
 const test = new HashMap(); 
 test.set('apple', 'red');
 test.set('banana', 'yellow');
